@@ -18,6 +18,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.Single;
@@ -106,14 +107,12 @@ public class RxJavaObservableTest {
         names.add("Jerry");
         names.add("William");
         names.add("Bob");
-
         Observable.fromIterable(names).subscribe(System.out::println);
     }
 
 
     @Test
     public void callableTest() {
-
         Callable<String> callable = () -> {
             Thread.sleep(1000);
             return "Hello Callable";
@@ -180,7 +179,6 @@ public class RxJavaObservableTest {
     public void behaviorSubjectTest() {
         //Subject class
         //AsyncSubject, BehaviorSubject, PublishSubject, ReplaySubject...
-
         BehaviorSubject subject = BehaviorSubject.createDefault(6);
         subject.subscribe(data -> System.out.println("Sub #1 -> " + data));
         subject.onNext("1");
@@ -189,23 +187,19 @@ public class RxJavaObservableTest {
         subject.subscribe(data -> System.out.println("Sub #2 -> " + data), System.out::println, () -> System.out.println("onComplete()"));
         subject.onNext("5");
         subject.onComplete();
-
     }
 
     @Test
     public void connectableObservableTest() throws InterruptedException {
         String[] dt = {"1", "2", "3"};
-
         Observable balls = Observable.interval(200, TimeUnit.MILLISECONDS)
                 .map(Long::intValue)
                 .map(i -> dt[i])
                 .take(dt.length);
-
         ConnectableObservable source = balls.publish();
 
         source.subscribe(data -> System.out.println("Subscriber #1 : " + data));
         source.subscribe(data -> System.out.println("Subscriber #2 : " + data));
-
 
         Thread.sleep(250);
         source.connect();
@@ -219,7 +213,7 @@ public class RxJavaObservableTest {
 
         /*      NullPointerException: items is null   */
 //        String[] balls = null;
-        Observable source = Observable.<String>fromArray(balls)
+        Observable source = Observable.fromArray(balls)
                 .map(ball -> ball + " Ball");
         source.subscribe(System.out::println);
     }
@@ -244,19 +238,46 @@ public class RxJavaObservableTest {
 
         //lambda
         Observable source2 = Observable.fromArray(balls)
-                .flatMap(ball-> Observable.just(ball + " Ball", ball + " Ball2", "  !Hi!"));
+                .flatMap(ball -> Observable.just(ball + " Ball", ball + " Ball2", "  !Hi!"));
         source.subscribe(System.out::println);
-        source2.subscribe(data ->System.out.println("source2# : " + data ));
+        source2.subscribe(data -> System.out.println("source2# : " + data));
 
     }
 
     @Test
     public void gugudanExampleTest() {
-        Integer[] row = {1,2,3,4,5,6,7,8,9};
-        int inputData = 7;
+        Integer[] row = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+        Integer inputData = 7;
         Observable source = Observable.fromArray(row)
-                .flatMap(data -> Observable.just(inputData*data));
-        source.subscribe(System.out::println);
+                .map(multipliers -> textCalculation(multipliers, inputData) + resultCalculation(multipliers, inputData));
+        source.subscribe(data -> {
+            System.out.println("구구단 " + data);
+        });
+    }
 
+    @Test
+    public void gugudanHardVerTest() {
+        // 1~9단까지 구구단 전체 곱셈 만들기
+        Integer[] row = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+        Observable<Integer> source = Observable.fromArray(row)
+                .map(data -> data);
+        Observable.fromArray(row)
+                .map(data -> source.subscribe(multipliers -> printGugudan(multipliers, data)
+                        , System.out::println
+                        , () -> System.out.println("--- " + data + "단 ---")))
+                .subscribe();
+    }
+
+    private void printGugudan(Integer multipliers, Integer dan) {
+        System.out.print(textCalculation(multipliers, dan));
+        System.out.println(resultCalculation(multipliers, dan));
+    }
+
+    private String textCalculation(Integer multipliers, Integer dan) {
+        return dan + " x " + multipliers + " = ";
+    }
+
+    private int resultCalculation(Integer multipliers, Integer dan) {
+        return dan * multipliers;
     }
 }
