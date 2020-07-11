@@ -1,6 +1,7 @@
 package com.gun.rxjavapractice;
 
 import android.os.health.SystemHealthManager;
+import android.util.Log;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import io.reactivex.rxjava3.core.Observable;
@@ -21,6 +23,8 @@ import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.observables.ConnectableObservable;
 import io.reactivex.rxjava3.processors.BehaviorProcessor;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.PublishSubject;
@@ -92,7 +96,7 @@ public class RxJavaObservableTest {
         source2.subscribe(System.out::println);
     }
 
-    private Integer[] toIntegerArray(int[] intArray){
+    private Integer[] toIntegerArray(int[] intArray) {
         return IntStream.of(intArray).boxed().toArray(Integer[]::new);
     }
 
@@ -121,7 +125,7 @@ public class RxJavaObservableTest {
 
     @Test
     public void fromFutureTest() {
-        Future future = Executors.newSingleThreadExecutor().submit(()-> {
+        Future future = Executors.newSingleThreadExecutor().submit(() -> {
             Thread.sleep(1000);
             return "Hello Future";
         });
@@ -182,13 +186,77 @@ public class RxJavaObservableTest {
         subject.onNext("1");
         subject.onNext("3");
 
-        subject.subscribe(data -> System.out.println("Sub #2 -> " + data), System.out::println, ()-> System.out.println("onComplete()") );
+        subject.subscribe(data -> System.out.println("Sub #2 -> " + data), System.out::println, () -> System.out.println("onComplete()"));
         subject.onNext("5");
         subject.onComplete();
 
     }
 
+    @Test
+    public void connectableObservableTest() throws InterruptedException {
+        String[] dt = {"1", "2", "3"};
+
+        Observable balls = Observable.interval(200, TimeUnit.MILLISECONDS)
+                .map(Long::intValue)
+                .map(i -> dt[i])
+                .take(dt.length);
+
+        ConnectableObservable source = balls.publish();
+
+        source.subscribe(data -> System.out.println("Subscriber #1 : " + data));
+        source.subscribe(data -> System.out.println("Subscriber #2 : " + data));
 
 
+        Thread.sleep(250);
+        source.connect();
+        source.subscribe(data -> System.out.println("Subscriber #3 :" + data));
+        Thread.sleep(600);
+    }
 
+    @Test
+    public void mapTest() {
+        String[] balls = {"1", "2", "3", "4", "5"};
+
+        /*      NullPointerException: items is null   */
+//        String[] balls = null;
+        Observable source = Observable.<String>fromArray(balls)
+                .map(ball -> ball + " Ball");
+        source.subscribe(System.out::println);
+    }
+
+    @Test
+    public void mapTest2() {
+        Function<String, String> getBalls = ball -> ball + " Ball";
+        String[] balls = {"1", "2", "3", "4", "5"};
+        Observable source = Observable.<String>fromArray(balls)
+                .map(getBalls);
+        source.subscribe(System.out::println);
+    }
+
+    @Test
+    public void flatMapTest() {
+        Function<String, Observable<String>> getDoubleBalls = ball -> Observable.just(ball + " Ball", ball + " Ball2");
+        String[] balls = {"1", "3", "5"};
+
+        //Function interface
+        Observable source = Observable.fromArray(balls)
+                .flatMap(getDoubleBalls);
+
+        //lambda
+        Observable source2 = Observable.fromArray(balls)
+                .flatMap(ball-> Observable.just(ball + " Ball", ball + " Ball2", "  !Hi!"));
+        source.subscribe(System.out::println);
+        source2.subscribe(data ->System.out.println("source2# : " + data ));
+
+    }
+
+    @Test
+    public void gugudanExampleTest() {
+        Integer[] row = {1,2,3,4,5,6,7,8,9};
+        int inputData = 7;
+        Observable source = Observable.fromArray(row)
+                .flatMap(data -> Observable.just(inputData*data));
+        source.subscribe(System.out::println);
+
+    }
 }
