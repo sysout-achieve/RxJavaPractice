@@ -1,7 +1,5 @@
 package com.gun.rxjavapractice;
 
-import android.os.health.SystemHealthManager;
-import android.util.Log;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +9,10 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.Single;
@@ -241,7 +243,6 @@ public class RxJavaObservableTest {
                 .flatMap(ball -> Observable.just(ball + " Ball", ball + " Ball2", "  !Hi!"));
         source.subscribe(System.out::println);
         source2.subscribe(data -> System.out.println("source2# : " + data));
-
     }
 
     @Test
@@ -279,5 +280,40 @@ public class RxJavaObservableTest {
 
     private int resultCalculation(Integer multipliers, Integer dan) {
         return dan * multipliers;
+    }
+
+    @Test
+    public void gugudanVer2Test() {
+        Integer dan = 7;
+        Observable<String> source = Observable.just(dan)
+                .flatMap(num -> Observable.range(1, 9)
+                        .map(row -> num + " * " + row + " = " + dan * row));
+        source.subscribe(System.out::println);
+    }
+
+    @Test
+    public void filterTest() {
+        Integer[] data = {100, 34, 27, 99, 50};
+        Observable<Integer> source = Observable.fromArray(data)
+                .filter(number -> number % 2 == 0);
+        source.subscribe(System.out::println);
+    }
+
+    @Test
+    public void reduceTest() {
+        String[] balls = {"1", "3", "5"};
+        Maybe<String> source = Observable.fromArray(balls).reduce((ball1, ball2)-> ball2+"("+(ball1)+")");
+        source.subscribe(System.out::println);
+    }
+
+    @Test
+    public void intervalTest() throws InterruptedException {
+        Observable source = Observable.interval(200L, TimeUnit.MILLISECONDS)
+                .map(data -> (data+1)*100);
+        //초기 지연값 0이면 처음 호출 이후 지연 시작
+//        Observable source = Observable.interval(0,200L, TimeUnit.MILLISECONDS)
+//                .map(data -> (data+1)*100);
+        source.subscribe(System.out::println);
+        Thread.sleep(5000);
     }
 }
