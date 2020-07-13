@@ -40,4 +40,19 @@ public class RxjavaOperatorTest {
                 .subscribe(System.out::println);
         Thread.sleep(10000);
     }
+
+    @Test
+    public void concatMapTest() throws InterruptedException {
+        String[] balls = {"1", "3", "5"};
+        Observable source = Observable.interval(100L, TimeUnit.MILLISECONDS)
+                .map(Long::intValue)
+                .map(idx->balls[idx])
+                .take(balls.length)
+                .concatMap(ball-> Observable.interval(200L, TimeUnit.MILLISECONDS)
+                .map(notUsed-> ball +"!!!")
+                .take(2));
+        source.subscribe(System.out::println);
+        Thread.sleep(5000);
+
+    }
 }
