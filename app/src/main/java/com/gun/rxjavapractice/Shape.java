@@ -41,7 +41,7 @@ public class Shape{
         if (DIAMOND.equals(shape)) return "<>";
         if (PENTAGON.equals(shape)) return "-P";
         if (STAR.equals(shape)) return "-S";
-        return ""; //for BALL
+        return "!!"; //for BALL
     }
 
     public static String getShape(String obj) {

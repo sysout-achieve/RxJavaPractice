@@ -1,21 +1,19 @@
 package com.gun.rxjavapractice;
 
-import android.graphics.drawable.shapes.Shape;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.ArrayList;
+import java.text.DecimalFormat;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.observables.GroupedObservable;
+import static com.gun.rxjavapractice.Shape.*;
 
 @RunWith(JUnit4.class)
 public class RxjavaOperatorTest {
+    private int index = 0; //FIXME don't use it
 
     @Test
     public void rangeTest() {
@@ -26,7 +24,8 @@ public class RxjavaOperatorTest {
 
     @Test
     public void intervalRangeTest() throws InterruptedException {
-        Observable<Long> source = Observable.intervalRange(1,
+        Observable<Long> source = Observable.intervalRange(
+                1,
                 5,
                 100L,
                 100L,
@@ -160,28 +159,118 @@ public class RxjavaOperatorTest {
         Observable source = Observable.zip(
                 Observable.just("RED", "GREEN", "BLUE"),
                 Observable.interval(200L, TimeUnit.MILLISECONDS),
-                (value, i)-> value
+                (value, i) -> value
         );
         source.subscribe(System.out::println);
         Thread.sleep(1000);
     }
-//
-//    @Test
-//    public void combineElectriBillsTest() {
-//        String[] data = {
-//                "100",
-//                "300"
-//        };
-//        Observable basePrice = Observable.fromArray(data)
-//                .map(Integer::parseInt)
-//                .map(val -> {
-//                    if (val <= 200) return 910;
-//                    if (val<=400) return 1600;
-//                    return 7300;
-//                });
-//
-//        Observable usagePrice = Observable.fromArray(data)
-//                .map()
-//
-//    }
+
+    //부수효과 있음
+    @Test
+    public void combineElectricBillsTest() {
+        String[] data = {
+                "100",  //910 + 93.3 * 100 = 10,240원
+                "300",  //1600 + 93.3 * 200 + 187.9 * 100 = 39,050원
+                "800",  //7300 + 93.3 * 200 + 187.9 * 200 + 280.65 * 200 = 175,800원
+        };
+        Observable<Integer> basePrice = Observable.fromArray(data)
+                .map(Integer::parseInt)
+                .map(val -> {
+                    if (val <= 200) return 910;
+                    if (val <= 400) return 1600;
+                    return 7300;
+                });
+
+        Observable<Integer> usagePrice = Observable.fromArray(data)
+                .map(Integer::parseInt)
+                .map(val -> {
+                    double series1 = Math.min(200, val) * 93.3;
+                    double series2 = Math.min(200, Math.max(val - 400, 0)) * 280.65;
+                    double series3 = Math.max(0, Math.max(val - 400, 0)) * 280.65;
+                    return (int) (series1 + series2 + series3);
+                });
+
+        Observable source = Observable.zip(
+                basePrice,
+                usagePrice,
+                Integer::sum
+        );
+
+        source.map(val -> new DecimalFormat("#,###").format(val))
+                .subscribe(val -> {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("Usage : " + data[index] + " kWh => ");
+                            sb.append("Price : " + val + " 원 ");
+                            System.out.println(sb.toString());
+                            index++;
+                        }
+                );
+    }
+
+    @Test
+    public void zipExampleTest() {
+        Observable source = Observable.zip(
+                Observable.just(100, 200, 300),
+                Observable.just(10, 20, 30),
+                Integer::sum)
+                .zipWith(Observable.just(1, 2, 3), Integer::sum);
+        source.subscribe(System.out::println);
+    }
+
+    @Test
+    public void combineLatestTest() throws InterruptedException {
+        String[] data1 = {PUPPLE, ORANGE, SKY, YELLOW}; //6, 7, 4, 2
+        String[] data2 = {DIAMOND, STAR, PENTAGON};
+
+        Observable source = Observable.combineLatest(
+                Observable.fromArray(data1)
+                        .zipWith(Observable.interval(100L, TimeUnit.MILLISECONDS),
+                                (shape, __) -> Shape.getColor(shape)),
+                Observable.fromArray(data2)
+                        .zipWith(Observable.interval(150L, 200L, TimeUnit.MILLISECONDS),
+                                (shape, __) -> Shape.getSuffix(shape)),
+                (v1, v2) -> v1 + v2);
+
+        source.subscribe(System.out::println);
+        Thread.sleep(3000);
+    }
+
+    @Test
+    public void mergeTest() throws InterruptedException {
+        String[] data1 = {"1", "3"};
+        String[] data2 = {"2", "4", "6"};
+
+        Observable<String> source1 = Observable.interval(0L, 100L, TimeUnit.MILLISECONDS)
+                .map(Long::intValue)
+                .map(idx -> data1[idx])
+                .take(data1.length);
+        Observable<String> source2 = Observable.interval(50L, TimeUnit.MILLISECONDS)
+                .map(Long::intValue)
+                .map(idx-> data2[idx])
+                .take(data2.length);
+
+        Observable<String> source = Observable.merge(source1, source2);
+        source.subscribe(System.out::println);
+        Thread.sleep(1000);
+    }
+
+    @Test
+    public void concatTest() throws InterruptedException {
+        Action onCompleteAction = ()-> System.out.println("onComplete()");
+
+        String[] data1 = {"1", "3"};
+        String[] data2 = {"2", "4", "6"};
+
+        Observable<String> source1 = Observable.fromArray(data1)
+                .doOnComplete(onCompleteAction);
+        Observable<String> source2 = Observable.interval(50L, TimeUnit.MILLISECONDS)
+                .map(Long::intValue)
+                .map(idx-> data2[idx])
+                .take(data2.length)
+                .doOnComplete(onCompleteAction);
+
+        Observable<String> source = Observable.concat(source1, source2).doOnComplete(onCompleteAction);
+        source.subscribe(System.out::println);
+        Thread.sleep(1000);
+    }
 }
