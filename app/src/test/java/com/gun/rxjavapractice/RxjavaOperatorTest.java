@@ -4,6 +4,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
@@ -271,6 +274,21 @@ public class RxjavaOperatorTest {
 
         Observable<String> source = Observable.concat(source1, source2).doOnComplete(onCompleteAction);
         source.subscribe(System.out::println);
+        Thread.sleep(1000);
+    }
+
+    @Test
+    public void ambTest() throws InterruptedException {
+        String[] data1 = {"1","3","5"};
+        String[] data2 = {"2-R","4-R"};
+        List<Observable<String>> source = Arrays.asList(
+                Observable.fromArray(data1)
+                .doOnComplete(()-> System.out.println("Observable #1 :")),
+                Observable.fromArray(data2)
+                .doOnComplete(()->System.out.println("Observable #2 :"))
+        );
+        Observable.amb(source).doOnComplete(()->System.out.println("OnComplete :"))
+                .subscribe(System.out::println);
         Thread.sleep(1000);
     }
 }
