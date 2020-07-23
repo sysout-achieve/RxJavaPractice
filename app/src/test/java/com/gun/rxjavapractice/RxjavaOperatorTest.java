@@ -291,4 +291,6 @@ public class RxjavaOperatorTest {
                 .subscribe(System.out::println);
         Thread.sleep(1000);
     }
+
+
 }
