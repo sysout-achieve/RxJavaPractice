@@ -7,6 +7,7 @@ import org.junit.runners.JUnit4;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @RunWith(JUnit4.class)
@@ -73,5 +74,16 @@ public class RxSchedulerTest {
     @Test
     public void trampolineTest() {
         String[] orgs = {"1", "3", "5"};
-    }
+        Observable<String> source = Observable.fromArray(orgs);
+
+        source.subscribeOn(Schedulers.trampoline())
+                .map(data -> "<<" + data +">>")
+                .subscribe(Log::i);
+
+        source.subscribeOn(Schedulers.trampoline())
+                .map(data -> "##" + data +"##")
+                .subscribe(Log::i);
+
+        CommonUtils.sleep(500);
+     }
 }
