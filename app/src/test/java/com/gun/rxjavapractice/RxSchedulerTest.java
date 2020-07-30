@@ -69,4 +69,9 @@ public class RxSchedulerTest {
                 .subscribe(Log::i);
         CommonUtils.sleep(1000);
     }
+
+    @Test
+    public void trampolineTest() {
+        String[] orgs = {"1", "3", "5"};
+    }
 }
