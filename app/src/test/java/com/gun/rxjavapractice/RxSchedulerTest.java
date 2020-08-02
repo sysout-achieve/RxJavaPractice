@@ -73,7 +73,7 @@ public class RxSchedulerTest {
     public void computationSchedulerTest() {
         String[] orgs = {"1", "3", "5"};
         Observable<String> source = Observable.fromArray(orgs)
-                .zipWith(Observable.interval(100L, TimeUnit.MILLISECONDS), (a, b) ->a);
+                .zipWith(Observable.interval(100L, TimeUnit.MILLISECONDS), (a, b) -> a);
 
         source.map(item -> "<<" + item + ">>")
                 .subscribeOn(Schedulers.computation())
@@ -91,15 +91,15 @@ public class RxSchedulerTest {
         Observable<String> source = Observable.fromArray(orgs);
 
         source.subscribeOn(Schedulers.trampoline())
-                .map(data -> "<<" + data +">>")
+                .map(data -> "<<" + data + ">>")
                 .subscribe(Log::i);
 
         source.subscribeOn(Schedulers.trampoline())
-                .map(data -> "##" + data +"##")
+                .map(data -> "##" + data + "##")
                 .subscribe(Log::i);
 
         CommonUtils.sleep(500);
-     }
+    }
 
     @Test
     public void executorTest() {
@@ -142,10 +142,10 @@ public class RxSchedulerTest {
         CommonUtils.sleep(3000);
     }
 
-/**
- * subscribeOn()함수는 subscribe()함수 호출 시 데이터 흐름 발행하는 thread 지정
- * observeOn()함수는 처리된 겨로가를 구독자에게 전달하는 thread 지정
-* */
+    /**
+     * subscribeOn()함수는 subscribe()함수 호출 시 데이터 흐름 발행하는 thread 지정
+     * observeOn()함수는 처리된 겨로가를 구독자에게 전달하는 thread 지정
+     */
     @Test
     public void rxCallbackTest() {
         CommonUtils.exampleStart();
@@ -153,7 +153,7 @@ public class RxSchedulerTest {
                 .subscribeOn(Schedulers.io())
                 .map(OkHttpHelper::get)
                 .concatWith(Observable.just(SECOND_URL)
-                .map(OkHttpHelper::get));
+                        .map(OkHttpHelper::get));
         source.subscribe(Log::it);
         CommonUtils.sleep(1000);
     }
@@ -168,7 +168,8 @@ public class RxSchedulerTest {
                 .subscribeOn(Schedulers.io())
                 .map(OkHttpHelper::get);
 
-        Observable.zip(first, second, (a,b) -> ("\n>>"+ a + "\n>>"+b))
+        Observable.zip(first, second, (a, b) ->
+                ("\n>>" + a + "\n>>" + b))
                 .subscribe(Log::it);
 
         CommonUtils.sleep(5000);
