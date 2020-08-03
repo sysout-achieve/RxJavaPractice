@@ -31,6 +31,21 @@ public class RxWeatherExample {
         CommonUtils.sleep(3000);
     }
 
+    @Test
+    public void weatherOneCallTest() {
+        CommonUtils.exampleStart();
+        Observable<String> source = Observable.just(URL + API_KEY)
+                .map(OkHttpHelper::getWithLog)
+                .subscribeOn(Schedulers.io())
+                .share()
+                .observeOn(Schedulers.newThread());
+        source.map(this::parseTemperature).subscribe(Log::it);
+        source.map(this::parseCityName).subscribe(Log::it);
+        source.map(this::parseCountry).subscribe(Log::it);
+
+        CommonUtils.sleep(3000);
+    }
+
 
     private String parseTemperature(String json) {
         return parse(json, "\"temp\":[0-9]*.[0-9]*");
