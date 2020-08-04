@@ -25,7 +25,7 @@ public class RxWeatherExample {
 
         CommonUtils.exampleStart();
 
-        Observable.concat(temperature,city, country)
+        Observable.concat(temperature, city, country)
                 .observeOn(Schedulers.newThread())
                 .subscribe(Log::i);
         CommonUtils.sleep(3000);
