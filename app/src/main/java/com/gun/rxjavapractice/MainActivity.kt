@@ -21,6 +21,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(nextIntent)
             finish()
         }
+        btn_text_changed.setOnClickListener {
+            val nextIntent = Intent(this, DebounceSearchActivity::class.java)
+            startActivity(nextIntent)
+            finish()
+        }
 
     }
 }

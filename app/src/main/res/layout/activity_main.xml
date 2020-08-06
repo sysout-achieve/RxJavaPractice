@@ -31,4 +31,13 @@
         app:layout_constraintStart_toEndOf="@+id/btn_hello"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/btn_text_changed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TxtChange"
+        app:layout_constraintStart_toEndOf="@+id/btn_loop"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
