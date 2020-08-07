@@ -9,15 +9,19 @@ import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.jakewharton.rxbinding2.widget.RxTextView;
+import com.jakewharton.rxbinding2.widget.TextViewTextChangeEvent;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.observers.DisposableObserver;
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
+
 
 public class DebounceSearchActivity extends AppCompatActivity {
     ListView mLogView;
@@ -40,6 +44,31 @@ public class DebounceSearchActivity extends AppCompatActivity {
                 .filter(s->!TextUtils.isEmpty(s))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(getObserver());
+
+        mDisposable = RxTextView.textChangeEvents(mSearchBox)
+                .debounce(400, TimeUnit.MILLISECONDS)
+                .filter(s -> !TextUtils.isEmpty(s.text().toString()))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(getobserverLib());
+    }
+
+    private DisposableObserver<TextViewTextChangeEvent> getobserverLib() {
+        return new DisposableObserver<TextViewTextChangeEvent>() {
+            @Override
+            public void onNext(@NonNull TextViewTextChangeEvent textViewTextChangeEvent) {
+                log("Search "+ textViewTextChangeEvent.text().toString());
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
     }
 
     private Observable<CharSequence> getObservable() {
@@ -60,6 +89,7 @@ public class DebounceSearchActivity extends AppCompatActivity {
             }
         }));
     }
+
     private DisposableObserver<CharSequence> getObserver(){
         return new DisposableObserver<CharSequence>() {
             @Override
