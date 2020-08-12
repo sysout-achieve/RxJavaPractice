@@ -65,6 +65,7 @@ public class RxWeatherExample {
         if (match.find()) {
             return match.group();
         }
+
         return "N/A";
     }
 
