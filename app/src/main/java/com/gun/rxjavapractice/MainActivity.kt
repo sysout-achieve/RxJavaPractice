@@ -26,6 +26,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(nextIntent)
             finish()
         }
-
+        btn_async_task.setOnClickListener {
+            val nextIntent = Intent(this, AsyncTaskActivity::class.java)
+            startActivity(nextIntent)
+            finish()
+        }
     }
 }
