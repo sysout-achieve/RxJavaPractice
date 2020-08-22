@@ -1,5 +1,7 @@
 package com.gun.rxjavapractice;
 
+import java.util.Scanner;
+
 //@Getter
 //@Setter
 //@Log
@@ -12,7 +14,11 @@ public class Order {
 
     public Order() {}
 
+    int num;
+    String title;
+
     public Order(Long id) {
+        Scanner scanner = new Scanner(System.in);
         this.id = id;
     }
 
