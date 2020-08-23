@@ -6,6 +6,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 @RunWith(JUnit4.class)
 public class RxUnitTest {
@@ -131,6 +133,8 @@ public class RxUnitTest {
             a = a * m + d;
         }
         System.out.print(a + " ");
+        Scanner scanner = new Scanner(System.in);
+
     }
 
     @Test
@@ -157,4 +161,63 @@ public class RxUnitTest {
             System.out.printf("%d ", b[i]);
         }
     }
+
+    @Test
+    public void exampleTest7() {
+        String[] arg = {"09:05 10", "12:20 5","13:25 6","14:24 5"};
+
+        String currentParam = "12:05";
+        int k = 11;
+        long currentTime = getTimeValue(currentParam);
+        for (int i = 0; i <= arg.length-1; i++) {
+        long time = getTimeValue(arg[i]);
+        int made = getValueK(arg[i]);
+            if (currentTime <= time) {
+                k -= made;
+                if (k <= 0) {
+                    time -= currentTime;
+                    System.out.println(time);
+                    return;
+                }
+                if (arg.length-1 == i){
+                    System.out.println(-1);
+                }
+            }
+        }
+    }
+
+
+
+    long getTimeValue(String bakery_schedule) {
+        String[] firstPart = bakery_schedule.split(":");
+        String[] secondPart = firstPart[1].split(" ");
+        String hourStr = firstPart[0];
+        String minStr = secondPart[0];
+        long timeHour = Long.parseLong(hourStr) * 60;
+        long timeMin = Long.parseLong(minStr);
+        return timeHour + timeMin;
+    }
+
+    int getValueK(String bakery_schedule) {
+        String[] firstPart = bakery_schedule.split(":");
+        String[] secondPart = firstPart[1].split(" ");
+        return Integer.parseInt(secondPart[1]);
+    }
+
+    @Test
+    public void exampleTest8() {
+        Scanner scan = new Scanner(System.in);
+        int a = scan.nextInt();
+        int[][] ground = new int[20][20];
+        for(int i =1; i<=a; i++) {
+            ground[scan.nextInt()][scan.nextInt()] = 1;
+        }
+        for(int i = 1; i<20; i++) {
+            for(int j =1; j<20; j++) {
+                System.out.print(ground[i][j]);
+            }
+            System.out.println();
+        }
+    }
+
 }
